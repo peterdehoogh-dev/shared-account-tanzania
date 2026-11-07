@@ -11,6 +11,9 @@ import {
   getFirestore,
   collection,
   addDoc,
+  doc,
+  updateDoc,
+  deleteDoc,
   query,
   orderBy,
   onSnapshot,
@@ -37,9 +40,7 @@ const firebaseConfig = {
 // --------------------------------------------------
 
 const app = initializeApp(firebaseConfig);
-
 const auth = getAuth(app);
-
 const db = getFirestore(app);
 
 const transactionsCollection =
@@ -51,8 +52,8 @@ const transactionsCollection =
 // --------------------------------------------------
 
 let transactions = [];
-
 let unsubscribeTransactions = null;
+let editingTransactionId = null;
 
 
 // --------------------------------------------------
@@ -60,10 +61,8 @@ let unsubscribeTransactions = null;
 // --------------------------------------------------
 
 function formatTSh(amount) {
-
   return "TSh " +
     Math.abs(amount).toLocaleString("en-US");
-
 }
 
 
@@ -79,7 +78,6 @@ window.login = async function () {
   const password =
     document.getElementById("loginPassword").value;
 
-
   if (!email || !password) {
 
     alert(
@@ -87,9 +85,7 @@ window.login = async function () {
     );
 
     return;
-
   }
-
 
   try {
 
@@ -101,17 +97,12 @@ window.login = async function () {
 
   } catch (error) {
 
-    console.error(
-      "Login error:",
-      error
-    );
+    console.error("Login error:", error);
 
     alert(
       "Login failed. Please check your email address and password."
     );
-
   }
-
 };
 
 
@@ -127,18 +118,13 @@ window.logout = async function () {
 
   } catch (error) {
 
-    console.error(
-      "Logout error:",
-      error
-    );
-
+    console.error("Logout error:", error);
   }
-
 };
 
 
 // --------------------------------------------------
-// WATCH LOGIN STATUS
+// AUTHENTICATION STATUS
 // --------------------------------------------------
 
 onAuthStateChanged(auth, (user) => {
@@ -149,18 +135,13 @@ onAuthStateChanged(auth, (user) => {
   const appSection =
     document.getElementById("appSection");
 
-
   if (!loginSection || !appSection) {
-
     return;
-
   }
-
 
   if (user) {
 
     loginSection.style.display = "none";
-
     appSection.style.display = "block";
 
     startTransactionListener();
@@ -168,22 +149,15 @@ onAuthStateChanged(auth, (user) => {
   } else {
 
     loginSection.style.display = "block";
-
     appSection.style.display = "none";
 
     transactions = [];
 
-
     if (unsubscribeTransactions) {
-
       unsubscribeTransactions();
-
       unsubscribeTransactions = null;
-
     }
-
   }
-
 });
 
 
@@ -194,18 +168,14 @@ onAuthStateChanged(auth, (user) => {
 function startTransactionListener() {
 
   if (unsubscribeTransactions) {
-
     unsubscribeTransactions();
-
   }
-
 
   const transactionQuery =
     query(
       transactionsCollection,
       orderBy("date", "asc")
     );
-
 
   unsubscribeTransactions =
     onSnapshot(
@@ -216,32 +186,23 @@ function startTransactionListener() {
 
         transactions = [];
 
+        snapshot.forEach((documentSnapshot) => {
 
-        snapshot.forEach(
-          (documentSnapshot) => {
+          const data =
+            documentSnapshot.data();
 
-            const data =
-              documentSnapshot.data();
+          transactions.push({
 
+            id: documentSnapshot.id,
+            date: data.date,
+            description: data.description,
+            amount: Number(data.amount),
+            createdAt: data.createdAt || null
 
-            transactions.push({
-
-              id: documentSnapshot.id,
-
-              date: data.date,
-
-              description: data.description,
-
-              amount: Number(data.amount)
-
-            });
-
-          }
-        );
-
+          });
+        });
 
         render();
-
       },
 
       (error) => {
@@ -251,324 +212,14 @@ function startTransactionListener() {
           error
         );
 
-
         alert(
           "The transactions could not be loaded."
         );
-
-      }
-
-    );
-
-}
-
-
-// --------------------------------------------------
-// SHOW / HIDE NEW TRANSACTION FORM
-// --------------------------------------------------
-
-window.toggleForm = function () {
-
-  const form =
-    document.getElementById("transactionForm");
-
-
-  if (!form) {
-
-    return;
-
-  }
-
-
-  if (form.style.display === "block") {
-
-    form.style.display = "none";
-
-  } else {
-
-    form.style.display = "block";
-
-  }
-
-};
-
-
-// --------------------------------------------------
-// ADD TRANSACTION
-// --------------------------------------------------
-
-window.addTransaction = async function () {
-
-  const user =
-    auth.currentUser;
-
-
-  if (!user) {
-
-    alert(
-      "Please log in first."
-    );
-
-    return;
-
-  }
-
-
-  const date =
-    document.getElementById("date").value;
-
-  const description =
-    document
-      .getElementById("description")
-      .value
-      .trim();
-
-  const type =
-    document.getElementById("type").value;
-
-  const amount =
-    Number(
-      document.getElementById("amount").value
-    );
-
-
-  if (
-    !date ||
-    !description ||
-    !Number.isFinite(amount) ||
-    amount <= 0
-  ) {
-
-    alert(
-      "Please enter all transaction details correctly."
-    );
-
-    return;
-
-  }
-
-
-  const signedAmount =
-    type === "income"
-      ? Math.abs(amount)
-      : -Math.abs(amount);
-
-
-  try {
-
-    await addDoc(
-      transactionsCollection,
-      {
-
-        date: date,
-
-        description: description,
-
-        amount: signedAmount,
-
-        createdAt: serverTimestamp(),
-
-        createdBy: user.uid
-
       }
     );
-
-
-    document.getElementById(
-      "description"
-    ).value = "";
-
-
-    document.getElementById(
-      "amount"
-    ).value = "";
-
-
-    document.getElementById(
-      "transactionForm"
-    ).style.display = "none";
-
-
-  } catch (error) {
-
-    console.error(
-      "Transaction could not be saved:",
-      error
-    );
-
-
-    alert(
-      "The transaction could not be saved."
-    );
-
-  }
-
-};
-
-
-// --------------------------------------------------
-// DISPLAY TRANSACTIONS
-// --------------------------------------------------
-
-function render() {
-
-  const table =
-    document.getElementById("transactionTable");
-
-  const balanceElement =
-    document.getElementById("currentBalance");
-
-
-  if (!table || !balanceElement) {
-
-    return;
-
-  }
-
-
-  table.innerHTML = "";
-
-
-  let balance = 0;
-
-  const calculated = [];
-
-
-  transactions.forEach(
-    (transaction) => {
-
-      balance += transaction.amount;
-
-
-      calculated.push({
-
-        ...transaction,
-
-        balance: balance
-
-      });
-
-    }
-  );
-
-
-  balanceElement.textContent =
-    balance < 0
-      ? "- " + formatTSh(balance)
-      : formatTSh(balance);
-
-
-  balanceElement.style.color =
-    balance >= 0
-      ? "#159447"
-      : "#dc2626";
-
-
-  calculated
-    .slice()
-    .reverse()
-    .forEach(
-      (transaction) => {
-
-        const row =
-          document.createElement("tr");
-
-
-        const dateParts =
-          transaction.date.split("-");
-
-
-        const displayDate =
-          dateParts.length === 3
-            ? `${dateParts[2]}-${dateParts[1]}-${dateParts[0]}`
-            : transaction.date;
-
-
-        const amountClass =
-          transaction.amount >= 0
-            ? "income"
-            : "expense";
-
-
-        const balanceClass =
-          transaction.balance >= 0
-            ? "positive"
-            : "negative";
-
-
-        const sign =
-          transaction.amount >= 0
-            ? "+"
-            : "-";
-
-
-        row.innerHTML = `
-
-          <td>${displayDate}</td>
-
-          <td>${escapeHtml(
-            transaction.description
-          )}</td>
-
-          <td class="${amountClass}">
-            ${sign} ${formatTSh(
-              transaction.amount
-            )}
-          </td>
-
-          <td class="${balanceClass}">
-            ${
-              transaction.balance < 0
-                ? "-"
-                : ""
-            }
-            ${formatTSh(
-              transaction.balance
-            )}
-          </td>
-
-        `;
-
-
-        table.appendChild(row);
-
-      }
-    );
-
 }
 
 
 // --------------------------------------------------
-// SECURITY: ESCAPE USER TEXT
-// --------------------------------------------------
-
-function escapeHtml(text) {
-
-  const div =
-    document.createElement("div");
-
-  div.textContent = text;
-
-  return div.innerHTML;
-
-}
-
-
-// --------------------------------------------------
-// SET TODAY AS DEFAULT DATE
-// --------------------------------------------------
-
-const dateInput =
-  document.getElementById("date");
-
-
-if (dateInput) {
-
-  const today =
-    new Date()
-      .toISOString()
-      .split("T")[0];
-
-  dateInput.value = today;
-
-}
+// OPEN / CLOSE TRANSACTION FORM
+// ---------
