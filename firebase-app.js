@@ -52,6 +52,8 @@ const transactionsCollection =
 
 let transactions = [];
 
+let unsubscribeTransactions = null;
+
 
 // --------------------------------------------------
 // FORMAT TANZANIAN SHILLINGS
@@ -80,7 +82,9 @@ window.login = async function () {
 
   if (!email || !password) {
 
-    alert("Vul je e-mailadres en wachtwoord in.");
+    alert(
+      "Please enter your email address and password."
+    );
 
     return;
 
@@ -97,10 +101,13 @@ window.login = async function () {
 
   } catch (error) {
 
-    console.error("Login error:", error);
+    console.error(
+      "Login error:",
+      error
+    );
 
     alert(
-      "Inloggen is niet gelukt. Controleer je e-mailadres en wachtwoord."
+      "Login failed. Please check your email address and password."
     );
 
   }
@@ -120,7 +127,10 @@ window.logout = async function () {
 
   } catch (error) {
 
-    console.error("Logout error:", error);
+    console.error(
+      "Logout error:",
+      error
+    );
 
   }
 
@@ -163,6 +173,15 @@ onAuthStateChanged(auth, (user) => {
 
     transactions = [];
 
+
+    if (unsubscribeTransactions) {
+
+      unsubscribeTransactions();
+
+      unsubscribeTransactions = null;
+
+    }
+
   }
 
 });
@@ -171,9 +190,6 @@ onAuthStateChanged(auth, (user) => {
 // --------------------------------------------------
 // REALTIME FIRESTORE LISTENER
 // --------------------------------------------------
-
-let unsubscribeTransactions = null;
-
 
 function startTransactionListener() {
 
@@ -201,25 +217,27 @@ function startTransactionListener() {
         transactions = [];
 
 
-        snapshot.forEach((documentSnapshot) => {
+        snapshot.forEach(
+          (documentSnapshot) => {
 
-          const data =
-            documentSnapshot.data();
+            const data =
+              documentSnapshot.data();
 
 
-          transactions.push({
+            transactions.push({
 
-            id: documentSnapshot.id,
+              id: documentSnapshot.id,
 
-            date: data.date,
+              date: data.date,
 
-            description: data.description,
+              description: data.description,
 
-            amount: Number(data.amount)
+              amount: Number(data.amount)
 
-          });
+            });
 
-        });
+          }
+        );
 
 
         render();
@@ -235,7 +253,7 @@ function startTransactionListener() {
 
 
         alert(
-          "De transacties konden niet worden geladen."
+          "The transactions could not be loaded."
         );
 
       }
@@ -287,7 +305,9 @@ window.addTransaction = async function () {
 
   if (!user) {
 
-    alert("Log eerst in.");
+    alert(
+      "Please log in first."
+    );
 
     return;
 
@@ -319,7 +339,9 @@ window.addTransaction = async function () {
     amount <= 0
   ) {
 
-    alert("Vul alle gegevens correct in.");
+    alert(
+      "Please enter all transaction details correctly."
+    );
 
     return;
 
@@ -376,7 +398,7 @@ window.addTransaction = async function () {
 
 
     alert(
-      "De transactie kon niet worden opgeslagen."
+      "The transaction could not be saved."
     );
 
   }
@@ -412,20 +434,22 @@ function render() {
   const calculated = [];
 
 
-  transactions.forEach((transaction) => {
+  transactions.forEach(
+    (transaction) => {
 
-    balance += transaction.amount;
+      balance += transaction.amount;
 
 
-    calculated.push({
+      calculated.push({
 
-      ...transaction,
+        ...transaction,
 
-      balance: balance
+        balance: balance
 
-    });
+      });
 
-  });
+    }
+  );
 
 
   balanceElement.textContent =
@@ -443,71 +467,73 @@ function render() {
   calculated
     .slice()
     .reverse()
-    .forEach((transaction) => {
+    .forEach(
+      (transaction) => {
 
-      const row =
-        document.createElement("tr");
-
-
-      const dateParts =
-        transaction.date.split("-");
+        const row =
+          document.createElement("tr");
 
 
-      const displayDate =
-        dateParts.length === 3
-          ? `${dateParts[2]}-${dateParts[1]}-${dateParts[0]}`
-          : transaction.date;
+        const dateParts =
+          transaction.date.split("-");
 
 
-      const amountClass =
-        transaction.amount >= 0
-          ? "income"
-          : "expense";
+        const displayDate =
+          dateParts.length === 3
+            ? `${dateParts[2]}-${dateParts[1]}-${dateParts[0]}`
+            : transaction.date;
 
 
-      const balanceClass =
-        transaction.balance >= 0
-          ? "positive"
-          : "negative";
+        const amountClass =
+          transaction.amount >= 0
+            ? "income"
+            : "expense";
 
 
-      const sign =
-        transaction.amount >= 0
-          ? "+"
-          : "-";
+        const balanceClass =
+          transaction.balance >= 0
+            ? "positive"
+            : "negative";
 
 
-      row.innerHTML = `
-
-        <td>${displayDate}</td>
-
-        <td>${escapeHtml(
-          transaction.description
-        )}</td>
-
-        <td class="${amountClass}">
-          ${sign} ${formatTSh(
-            transaction.amount
-          )}
-        </td>
-
-        <td class="${balanceClass}">
-          ${
-            transaction.balance < 0
-              ? "-"
-              : ""
-          }
-          ${formatTSh(
-            transaction.balance
-          )}
-        </td>
-
-      `;
+        const sign =
+          transaction.amount >= 0
+            ? "+"
+            : "-";
 
 
-      table.appendChild(row);
+        row.innerHTML = `
 
-    });
+          <td>${displayDate}</td>
+
+          <td>${escapeHtml(
+            transaction.description
+          )}</td>
+
+          <td class="${amountClass}">
+            ${sign} ${formatTSh(
+              transaction.amount
+            )}
+          </td>
+
+          <td class="${balanceClass}">
+            ${
+              transaction.balance < 0
+                ? "-"
+                : ""
+            }
+            ${formatTSh(
+              transaction.balance
+            )}
+          </td>
+
+        `;
+
+
+        table.appendChild(row);
+
+      }
+    );
 
 }
 
