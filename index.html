@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="nl">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <title>Gedeelde Rekening</title>
+  <title>Shared Account</title>
 
   <style>
     * {
@@ -200,39 +200,39 @@
 
       <div class="card login-card">
 
-        <h1>Gedeelde Rekening</h1>
+        <h1>Shared Account</h1>
 
         <p class="subtitle">
-          Log in om de rekening te bekijken
+          Log in to view the account
         </p>
 
         <label for="loginEmail">
-          E-mailadres
+          Email address
         </label>
 
         <input
           type="email"
           id="loginEmail"
           autocomplete="email"
-          placeholder="E-mailadres"
+          placeholder="Email address"
         >
 
         <label for="loginPassword">
-          Wachtwoord
+          Password
         </label>
 
         <input
           type="password"
           id="loginPassword"
           autocomplete="current-password"
-          placeholder="Wachtwoord"
+          placeholder="Password"
         >
 
         <button
           class="login-button"
           onclick="login()"
         >
-          Inloggen
+          Log In
         </button>
 
       </div>
@@ -257,15 +257,15 @@
           class="logout-button"
           onclick="logout()"
         >
-          Uitloggen
+          Log Out
         </button>
 
         <h1>
-          Rekeningoverzicht
+          Account Overview
         </h1>
 
         <p class="subtitle">
-          Gedeelde rekening
+          Shared Account
         </p>
 
       </div>
@@ -276,7 +276,7 @@
       <div class="card">
 
         <div class="balance-label">
-          Huidig saldo
+          Current Balance
         </div>
 
         <div id="currentBalance">
@@ -287,7 +287,7 @@
           class="add-button"
           onclick="toggleForm()"
         >
-          + Nieuwe transactie
+          + New Transaction
         </button>
 
       </div>
@@ -301,11 +301,11 @@
       >
 
         <h2>
-          Nieuwe transactie
+          New Transaction
         </h2>
 
         <label for="date">
-          Datum
+          Date
         </label>
 
         <input
@@ -314,13 +314,13 @@
         >
 
         <label for="description">
-          Omschrijving
+          Description
         </label>
 
         <input
           type="text"
           id="description"
-          placeholder="Bijv. transport"
+          placeholder="For example: transport"
         >
 
         <label for="type">
@@ -330,18 +330,18 @@
         <select id="type">
 
           <option value="income">
-            Geld erbij
+            Money In
           </option>
 
           <option value="expense">
-            Geld eraf
+            Money Out
           </option>
 
         </select>
 
 
         <label for="amount">
-          Bedrag (TSh)
+          Amount (TSh)
         </label>
 
         <input
@@ -350,7 +350,7 @@
           min="1"
           step="1"
           inputmode="numeric"
-          placeholder="Bijv. 250000"
+          placeholder="For example: 250000"
         >
 
 
@@ -358,7 +358,7 @@
           class="save-button"
           onclick="addTransaction()"
         >
-          Opslaan
+          Save
         </button>
 
       </div>
@@ -373,10 +373,10 @@
           <thead>
 
             <tr>
-              <th>Datum</th>
-              <th>Omschrijving</th>
-              <th>Bedrag</th>
-              <th>Saldo</th>
+              <th>Date</th>
+              <th>Description</th>
+              <th>Amount</th>
+              <th>Balance</th>
             </tr>
 
           </thead>
