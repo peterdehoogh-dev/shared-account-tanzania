@@ -1,1 +1,508 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+  <title>Gedeelde Rekening</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f3f6f8;
+      color: #1f2937;
+    }
+
+    .container {
+      max-width: 850px;
+      margin: 0 auto;
+      padding: 24px 14px;
+    }
+
+    h1 {
+      margin-bottom: 5px;
+      font-size: 28px;
+    }
+
+    .subtitle {
+      color: #6b7280;
+      margin-top: 0;
+    }
+
+    .balance-card {
+      background: white;
+      border-radius: 18px;
+      padding: 24px;
+      margin-top: 25px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+
+    .balance-label {
+      color: #6b7280;
+      font-size: 15px;
+    }
+
+    #currentBalance {
+      font-size: 36px;
+      font-weight: bold;
+      margin-top: 8px;
+      color: #159447;
+    }
+
+    button {
+      border: none;
+      border-radius: 10px;
+      padding: 12px 16px;
+      font-size: 15px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .add-button {
+      margin-top: 20px;
+      color: white;
+      background: #1f2937;
+    }
+
+    .form-card {
+      display: none;
+      background: white;
+      padding: 20px;
+      border-radius: 18px;
+      margin-top: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+
+    label {
+      display: block;
+      margin-top: 14px;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+
+    input,
+    select {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #d1d5db;
+      border-radius: 9px;
+      font-size: 16px;
+    }
+
+    .save-button {
+      background: #1f2937;
+      color: white;
+      margin-top: 18px;
+      width: 100%;
+    }
+
+    .table-card {
+      background: white;
+      margin-top: 20px;
+      border-radius: 18px;
+      overflow-x: auto;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      min-width: 560px;
+    }
+
+    th {
+      background: #f8fafc;
+      color: #6b7280;
+      font-size: 13px;
+      text-align: left;
+    }
+
+    th,
+    td {
+      padding: 14px 12px;
+      border-bottom: 1px solid #eeeeee;
+    }
+
+    th:nth-child(3),
+    th:nth-child(4),
+    td:nth-child(3),
+    td:nth-child(4) {
+      text-align: right;
+    }
+
+    .income {
+      color: #159447;
+      font-weight: bold;
+    }
+
+    .expense {
+      color: #dc2626;
+      font-weight: bold;
+    }
+
+    .positive {
+      color: #159447;
+      font-weight: bold;
+    }
+
+    .negative {
+      color: #dc2626;
+      font-weight: bold;
+    }
+
+    @media (max-width: 600px) {
+      .container {
+        padding: 16px 10px;
+      }
+
+      h1 {
+        font-size: 24px;
+      }
+
+      #currentBalance {
+        font-size: 30px;
+      }
+
+      th,
+      td {
+        padding: 12px 8px;
+        font-size: 13px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="container">
+
+  <h1>Rekeningoverzicht</h1>
+  <p class="subtitle">Gedeelde rekening</p>
+
+  <div class="balance-card">
+
+    <div class="balance-label">
+      Huidig saldo
+    </div>
+
+    <div id="currentBalance">
+      TSh 0
+    </div>
+
+    <button
+      class="add-button"
+      onclick="toggleForm()">
+      + Nieuwe transactie
+    </button>
+
+  </div>
+
+  <div
+    class="form-card"
+    id="transactionForm">
+
+    <h2>Nieuwe transactie</h2>
+
+    <label>Datum</label>
+
+    <input
+      type="date"
+      id="date">
+
+    <label>Omschrijving</label>
+
+    <input
+      type="text"
+      id="description"
+      placeholder="Bijv. transport">
+
+    <label>Type</label>
+
+    <select id="type">
+
+      <option value="income">
+        Geld erbij
+      </option>
+
+      <option value="expense">
+        Geld eraf
+      </option>
+
+    </select>
+
+    <label>Bedrag (TSh)</label>
+
+    <input
+      type="number"
+      id="amount"
+      min="1"
+      step="1"
+      placeholder="Bijv. 250000">
+
+    <button
+      class="save-button"
+      onclick="addTransaction()">
+      Opslaan
+    </button>
+
+  </div>
+
+  <div class="table-card">
+
+    <table>
+
+      <thead>
+
+        <tr>
+          <th>Datum</th>
+          <th>Omschrijving</th>
+          <th>Bedrag</th>
+          <th>Saldo</th>
+        </tr>
+
+      </thead>
+
+      <tbody id="transactionTable">
+      </tbody>
+
+    </table>
+
+  </div>
+
+</div>
+
+<script>
+
+  let transactions = [
+
+    {
+      date: "01-11-2026",
+      description: "Beginstorting",
+      amount: 10000000
+    },
+
+    {
+      date: "03-11-2026",
+      description: "Materiaal",
+      amount: -450000
+    },
+
+    {
+      date: "05-11-2026",
+      description: "Bijdrage ontvangen",
+      amount: 250000
+    },
+
+    {
+      date: "07-11-2026",
+      description: "Transport",
+      amount: -1375000
+    }
+
+  ];
+
+
+  function formatTSh(amount) {
+
+    return "TSh " +
+      Math.abs(amount).toLocaleString("en-US");
+
+  }
+
+
+  function toggleForm() {
+
+    const form =
+      document.getElementById("transactionForm");
+
+    if (form.style.display === "block") {
+
+      form.style.display = "none";
+
+    } else {
+
+      form.style.display = "block";
+
+    }
+
+  }
+
+
+  function addTransaction() {
+
+    const date =
+      document.getElementById("date").value;
+
+    const description =
+      document.getElementById("description").value.trim();
+
+    const type =
+      document.getElementById("type").value;
+
+    const amount =
+      Number(document.getElementById("amount").value);
+
+
+    if (!date || !description || !amount) {
+
+      alert("Vul alle gegevens in.");
+
+      return;
+
+    }
+
+
+    const signedAmount =
+      type === "income"
+        ? Math.abs(amount)
+        : -Math.abs(amount);
+
+
+    const dateParts =
+      date.split("-");
+
+    const formattedDate =
+      dateParts[2] +
+      "-" +
+      dateParts[1] +
+      "-" +
+      dateParts[0];
+
+
+    transactions.push({
+
+      date: formattedDate,
+
+      description: description,
+
+      amount: signedAmount
+
+    });
+
+
+    document.getElementById("description").value = "";
+
+    document.getElementById("amount").value = "";
+
+    document.getElementById("transactionForm").style.display =
+      "none";
+
+
+    render();
+
+  }
+
+
+  function render() {
+
+    const table =
+      document.getElementById("transactionTable");
+
+    table.innerHTML = "";
+
+
+    let balance = 0;
+
+    const calculated = [];
+
+
+    transactions.forEach(transaction => {
+
+      balance += transaction.amount;
+
+      calculated.push({
+
+        ...transaction,
+
+        balance: balance
+
+      });
+
+    });
+
+
+    document.getElementById("currentBalance").textContent =
+      "TSh " +
+      balance.toLocaleString("en-US");
+
+
+    const balanceElement =
+      document.getElementById("currentBalance");
+
+
+    balanceElement.style.color =
+      balance >= 0
+        ? "#159447"
+        : "#dc2626";
+
+
+    calculated
+      .slice()
+      .reverse()
+      .forEach(transaction => {
+
+        const row =
+          document.createElement("tr");
+
+
+        const amountClass =
+          transaction.amount >= 0
+            ? "income"
+            : "expense";
+
+
+        const balanceClass =
+          transaction.balance >= 0
+            ? "positive"
+            : "negative";
+
+
+        const sign =
+          transaction.amount >= 0
+            ? "+"
+            : "-";
+
+
+        row.innerHTML = `
+
+          <td>${transaction.date}</td>
+
+          <td>${transaction.description}</td>
+
+          <td class="${amountClass}">
+            ${sign} ${formatTSh(transaction.amount)}
+          </td>
+
+          <td class="${balanceClass}">
+            ${transaction.balance < 0 ? "- " : ""}
+            ${formatTSh(transaction.balance)}
+          </td>
+
+        `;
+
+
+        table.appendChild(row);
+
+      });
+
+  }
+
+
+  const today =
+    new Date().toISOString().split("T")[0];
+
+  document.getElementById("date").value =
+    today;
+
+
+  render();
+
+</script>
+
+</body>
+</html>
