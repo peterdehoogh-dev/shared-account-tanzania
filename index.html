@@ -5,11 +5,28 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <title>Shared Account</title>
-<link rel="manifest" href="./manifest.json">
-<meta name="theme-color" content="#1f2937">
-<link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png">
-<link rel="apple-touch-icon" href="./icon-192.png">
+
+  <link rel="manifest" href="./manifest.json">
+
+  <meta
+    name="theme-color"
+    content="#1f2937"
+  >
+
+  <link
+    rel="icon"
+    type="image/png"
+    sizes="192x192"
+    href="./icon-192.png"
+  >
+
+  <link
+    rel="apple-touch-icon"
+    href="./icon-192.png"
+  >
+
   <style>
+
     * {
       box-sizing: border-box;
     }
@@ -22,7 +39,7 @@
     }
 
     .container {
-      max-width: 850px;
+      max-width: 900px;
       margin: 0 auto;
       padding: 24px 14px;
     }
@@ -30,6 +47,10 @@
     h1 {
       margin-bottom: 5px;
       font-size: 28px;
+    }
+
+    h2 {
+      margin-top: 0;
     }
 
     .subtitle {
@@ -91,6 +112,28 @@
       float: right;
     }
 
+    .cancel-button {
+      background: #e5e7eb;
+      color: #374151;
+      width: 100%;
+      margin-top: 10px;
+    }
+
+    .edit-button {
+      background: #e0f2fe;
+      color: #075985;
+      padding: 7px 10px;
+      margin-right: 5px;
+      font-size: 13px;
+    }
+
+    .delete-button {
+      background: #fee2e2;
+      color: #b91c1c;
+      padding: 7px 10px;
+      font-size: 13px;
+    }
+
     .form-card {
       display: none;
     }
@@ -109,6 +152,7 @@
       border: 1px solid #d1d5db;
       border-radius: 9px;
       font-size: 16px;
+      background: white;
     }
 
     .table-card {
@@ -122,7 +166,7 @@
     table {
       border-collapse: collapse;
       width: 100%;
-      min-width: 560px;
+      min-width: 700px;
     }
 
     th {
@@ -142,6 +186,11 @@
     th:nth-child(4),
     td:nth-child(3),
     td:nth-child(4) {
+      text-align: right;
+    }
+
+    .actions-cell {
+      white-space: nowrap;
       text-align: right;
     }
 
@@ -172,6 +221,7 @@
     }
 
     @media (max-width: 600px) {
+
       .container {
         padding: 16px 10px;
       }
@@ -189,13 +239,22 @@
         padding: 12px 8px;
         font-size: 13px;
       }
+
+      .edit-button,
+      .delete-button {
+        display: block;
+        width: 100%;
+        margin: 3px 0;
+      }
     }
+
   </style>
 </head>
 
 <body>
 
-  <!-- LOGIN -->
+
+  <!-- LOGIN SECTION -->
 
   <div id="loginSection">
 
@@ -203,11 +262,14 @@
 
       <div class="card login-card">
 
-        <h1>Shared Account</h1>
+        <h1>
+          Shared Account
+        </h1>
 
         <p class="subtitle">
           Log in to view the account
         </p>
+
 
         <label for="loginEmail">
           Email address
@@ -220,6 +282,7 @@
           placeholder="Email address"
         >
 
+
         <label for="loginPassword">
           Password
         </label>
@@ -230,6 +293,7 @@
           autocomplete="current-password"
           placeholder="Password"
         >
+
 
         <button
           class="login-button"
@@ -245,7 +309,7 @@
   </div>
 
 
-  <!-- APP -->
+  <!-- APP SECTION -->
 
   <div
     id="appSection"
@@ -253,6 +317,9 @@
   >
 
     <div class="container">
+
+
+      <!-- HEADER -->
 
       <div class="clearfix">
 
@@ -274,7 +341,7 @@
       </div>
 
 
-      <!-- BALANCE -->
+      <!-- CURRENT BALANCE -->
 
       <div class="card">
 
@@ -296,16 +363,17 @@
       </div>
 
 
-      <!-- NEW TRANSACTION -->
+      <!-- TRANSACTION FORM -->
 
       <div
         class="card form-card"
         id="transactionForm"
       >
 
-        <h2>
+        <h2 id="formTitle">
           New Transaction
         </h2>
+
 
         <label for="date">
           Date
@@ -316,6 +384,7 @@
           id="date"
         >
 
+
         <label for="description">
           Description
         </label>
@@ -325,6 +394,7 @@
           id="description"
           placeholder="For example: transport"
         >
+
 
         <label for="type">
           Type
@@ -358,16 +428,25 @@
 
 
         <button
+          id="saveTransactionButton"
           class="save-button"
           onclick="addTransaction()"
         >
           Save
         </button>
 
+
+        <button
+          class="cancel-button"
+          onclick="cancelTransaction()"
+        >
+          Cancel
+        </button>
+
       </div>
 
 
-      <!-- TRANSACTIONS -->
+      <!-- TRANSACTIONS TABLE -->
 
       <div class="table-card">
 
@@ -376,10 +455,27 @@
           <thead>
 
             <tr>
-              <th>Date</th>
-              <th>Description</th>
-              <th>Amount</th>
-              <th>Balance</th>
+
+              <th>
+                Date
+              </th>
+
+              <th>
+                Description
+              </th>
+
+              <th>
+                Amount
+              </th>
+
+              <th>
+                Balance
+              </th>
+
+              <th style="text-align:right;">
+                Actions
+              </th>
+
             </tr>
 
           </thead>
@@ -402,18 +498,45 @@
     type="module"
     src="./firebase-app.js">
   </script>
-<script>
-  if ("serviceWorker" in navigator) {
-    window.addEventListener("load", () => {
-      navigator.serviceWorker.register("./sw.js")
-        .then(() => {
-          console.log("Service Worker registered");
-        })
-        .catch((error) => {
-          console.error("Service Worker registration failed:", error);
-        });
-    });
-  }
-</script>
+
+
+  <!-- SERVICE WORKER -->
+
+  <script>
+
+    if ("serviceWorker" in navigator) {
+
+      window.addEventListener(
+        "load",
+        () => {
+
+          navigator.serviceWorker
+            .register("./sw.js")
+
+            .then(() => {
+
+              console.log(
+                "Service Worker registered"
+              );
+
+            })
+
+            .catch((error) => {
+
+              console.error(
+                "Service Worker registration failed:",
+                error
+              );
+
+            });
+
+        }
+      );
+
+    }
+
+  </script>
+
+
 </body>
 </html>
