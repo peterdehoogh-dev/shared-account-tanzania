@@ -1,4 +1,4 @@
-const CACHE_NAME = "petshage-shared-account-v2";
+const CACHE_NAME = "petshage-shared-account-v3";
 
 const FILES_TO_CACHE = [
   "./",
